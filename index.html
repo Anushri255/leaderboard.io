@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Leaderboard</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form, .leaderboard {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            border-top: 1px solid #ddd;
+        }
+
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #333;
+        }
+
+        li:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        li span {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-container input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .clear-btn {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .clear-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Game Leaderboard</h2>
+        <div class="form">
+            <h2>Add Your Score</h2>
+            <form id="scoreForm">
+                <label for="playerName">Player Name:</label>
+                <input type="text" id="playerName" placeholder="Enter your name" required>
+                <label for="playerScore">Score:</label>
+                <input type="number" id="playerScore" placeholder="Enter your score" required>
+                <button type="submit">Add Score</button>
+            </form>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by player name" onkeyup="filterLeaderboard()">
+        </div>
+        <div class="leaderboard">
+            <button class="clear-btn" onclick="clearScores()">Clear Scores</button>
+            <ul id="leaderboardList">
+            </ul>
+        </div>
+    </div>
+</body>
+<script>
+    document.getElementById('scoreForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('playerName').value;
+        const score = parseInt(document.getElementById('playerScore').value, 10);
+        
+        if (name && !isNaN(score)) {
+            addScore(name, score);
+            document.getElementById('scoreForm').reset();
+        }
+    });
+
+    function addScore(name, score) {
+        let scores = JSON.parse(localStorage.getItem('scores')) || [];
+        
+        scores.push({ name, score });
+        
+        scores = scores.sort((a, b) => b.score - a.score).slice(0, 10);
+        
+        localStorage.setItem('scores', JSON.stringify(scores));
+        
+        updateLeaderboard();
+    }
+
+    function updateLeaderboard() {
+        const leaderboardList = document.getElementById('leaderboardList');
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        leaderboardList.innerHTML = '';
+        
+        const scores = JSON.parse(localStorage.getItem('scores')) || [];
+        
+        const filteredScores = scores.filter(score => score.name.toLowerCase().includes(searchTerm));
+        
+        filteredScores.forEach((score, index) => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `<span class="rank">${index + 1}. ${score.name}</span> <span>${score.score}</span>`;
+            leaderboardList.appendChild(listItem);
+        });
+    }
+
+    function filterLeaderboard() {
+        updateLeaderboard();
+    }
+
+    function clearScores() {
+        localStorage.removeItem('scores');
+        updateLeaderboard();
+    }
+
+    updateLeaderboard();
+</script>
+</html>
